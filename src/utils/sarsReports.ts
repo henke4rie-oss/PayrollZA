@@ -140,7 +140,6 @@ export function auditBceaCompliance(employees: Employee[], standardMonthlyHours:
 }
 
 // # EXPLANATION FOR FOUNDER:
-// # Export completed payroll run to CSV (matching csv_exporter_4ab3bfeb.py output)
 export function exportPayrollToCsv(payrollRun: PayrollRun): string {
   const headers = [
     'Employee ID',

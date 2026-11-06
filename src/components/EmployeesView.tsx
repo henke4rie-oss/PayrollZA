@@ -6,7 +6,6 @@ Features:
 2. Add / Edit Employee modal with real-time RSA ID Luhn checksum validation & auto age extraction
 3. Smart Spreadsheet / CSV Importer:
    - Heuristically detects columns without needing exact headers (13 digits -> RSA ID, age, salary, employee code)
-   - Ported and enhanced from PayrollZA importer_47ad4bdf.py
 """
 */
 

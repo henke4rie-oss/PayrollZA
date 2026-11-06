@@ -1,7 +1,6 @@
 /*
 """
 Smart Spreadsheet & CSV Importer for South African Payroll
-Ported and enhanced from PayrollZA importer_47ad4bdf.py.
 Heuristically detects columns from actual cell data rather than relying strictly on headers:
 - 13 digits -> RSA ID number
 - Number under 100 -> Age

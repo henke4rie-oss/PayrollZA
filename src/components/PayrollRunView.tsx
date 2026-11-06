@@ -7,7 +7,6 @@ Calculates monthly payroll batch for all active employees:
 - SDL calculations (with R500k employer exemption support)
 - ETI (Employment Tax Incentive) youth incentive
 - Cryptographic SHA-256 seal for tamper evidence (TAA Section 29)
-- One-click CSV export matching csv_exporter_4ab3bfeb.py
 """
 */
 
@@ -174,7 +173,6 @@ export const PayrollRunView: React.FC<PayrollRunViewProps> = ({
   };
 
   // # EXPLANATION FOR FOUNDER:
-  // # Exports payroll CSV matching csv_exporter_4ab3bfeb.py
   const handleExportCsv = () => {
     if (!activeRun) return;
     const csvContent = exportPayrollToCsv(activeRun);
