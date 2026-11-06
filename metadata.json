@@ -1,0 +1,6 @@
+{
+  "name": "PayrollZA - South African Payroll & Tax Compliance SaaS",
+  "description": "Multi-tenant South African payroll SaaS with SARS PAYE, UIF, SDL, ETI calculations, EMP201/IRP5 generation, subscription billing, and POPIA data isolation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
