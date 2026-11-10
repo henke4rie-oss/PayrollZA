@@ -1,5 +1,7 @@
 # PayrollZA - South African Payroll & Statutory Compliance Prototype
 
+![CI](https://github.com/henke4rie-oss/PayrollZA/actions/workflows/ci.yml/badge.svg)
+
 A South African statutory payroll prototype for SME employers and accounting practices. It calculates PAYE, UIF, SDL, and BCEA Section 33 payslips, provides SARS EMP201 reconciliation schedules, and exports batch EFT payment files.
 
 > **Architecture Note:** The Python FastAPI backend (`api/`) is the future single source of truth for all statutory calculations and persistence. It is currently developed and tested in isolation with full test coverage before wiring directly to the React frontend.
