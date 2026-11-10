@@ -29,6 +29,13 @@ jobs:
         run: |
           ruff check api
 
+      - name: Check for Skipped or XFailed Tests
+        run: |
+          if grep -rnE "pytest\.mark\.(skip|xfail)|pytest\.skip|importorskip" api/tests; then
+            echo "Error: Skipped or xfailed tests detected in api/tests!"
+            exit 1
+          fi
+
       - name: Run Pytest Suite
         run: |
           PYTHONPATH=. pytest -v api/tests

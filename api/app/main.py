@@ -1,6 +1,7 @@
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, Query, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 
+from api.app.compliance import generate_compliance_calendar_ics
 from api.app.database import check_database_health
 from api.app.engine import calculate_payroll, validate_sa_id
 from api.app.schemas import (
@@ -70,3 +71,29 @@ def calculate_employee_payroll(payload: PayrollCalculationRequest):
 def validate_identity_number(payload: SaIdValidationRequest):
     result = validate_sa_id(payload.id_number)
     return SaIdValidationResponse(**result)
+
+
+# Download compliance calendar in RFC 5545 iCalendar feed format
+@app.get(
+    "/compliance/calendar.ics",
+    response_class=Response,
+    tags=["Compliance"],
+    summary="Download RFC 5545 iCalendar feed of statutory EMP201 and EMP501 deadlines",
+)
+def get_compliance_calendar(
+    year: int = Query(..., ge=1900, le=2200, description="Calendar year for compliance deadlines"),
+):
+    try:
+        ics_content = generate_compliance_calendar_ics(year)
+        return Response(
+            content=ics_content,
+            media_type="text/calendar; charset=utf-8",
+            headers={
+                "Content-Disposition": f'attachment; filename="4mula_payroll_compliance_{year}.ics"',
+            },
+        )
+    except ValueError as err:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(err),
+        ) from err
