@@ -178,10 +178,7 @@ export function calculateSdl(grossMonthly: number, isCompanyExempt: boolean = fa
   return Math.round(grossMonthly * SARS_2027_CONFIG.sdl.rate * 100) / 100;
 }
 
-/**
- * Calculate Employment Tax Incentive (ETI) for youth employment.
- * Applies for ages 18-29 earning between R2,000 and R7,500/month.
- */
+// TODO(ETI): verify against current SARS rules
 export function calculateEti(grossMonthly: number, age: number): number {
   if (age < SARS_2027_CONFIG.eti.minAge || age > SARS_2027_CONFIG.eti.maxAge) {
     return 0;
@@ -339,3 +336,24 @@ export function validateSouthAfricanId(idNumber: string): {
     isCitizen,
   };
 }
+
+/**
+ * Calculate age from date of birth (YYYY-MM-DD) as of a given date (defaults to today).
+ */
+export function calculateAgeFromDateOfBirth(dateOfBirth: string, asOfDate: Date = new Date()): number {
+  if (!dateOfBirth) return 0;
+  const parts = dateOfBirth.split('-').map(Number);
+  if (parts.length !== 3 || parts.some(isNaN)) return 0;
+  const [birthYear, birthMonth, birthDay] = parts;
+
+  const currentYear = asOfDate.getFullYear();
+  const currentMonth = asOfDate.getMonth() + 1;
+  const currentDay = asOfDate.getDate();
+
+  let age = currentYear - birthYear;
+  if (currentMonth < birthMonth || (currentMonth === birthMonth && currentDay < birthDay)) {
+    age--;
+  }
+  return Math.max(0, age);
+}
+

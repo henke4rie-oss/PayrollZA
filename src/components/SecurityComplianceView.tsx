@@ -76,8 +76,7 @@ export const SecurityComplianceView: React.FC<SecurityComplianceViewProps> = ({
 
   const [copiedTerms, setCopiedTerms] = useState<boolean>(false);
 
-  // # EXPLANATION FOR FOUNDER:
-  // # Computes and verifies the SHA-256 checksum against the stored seal.
+  // Computes and verifies the SHA-256 checksum against the stored seal.
   const handleVerifySeal = async () => {
     if (!selectedRunForVerify) return;
     setVerificationResult({ status: 'verifying' });
@@ -104,8 +103,7 @@ export const SecurityComplianceView: React.FC<SecurityComplianceViewProps> = ({
     }, 350);
   };
 
-  // # EXPLANATION FOR FOUNDER:
-  // # Simulates an IDOR attack attempting to access another tenant's records.
+  // Tests tenant boundary isolation against unauthorized cross-tenant requests.
   const handleTestIdor = () => {
     const foreignTenantId = 'tenant-competitor-agri-999';
     const check = validateTenantAccess(tenant.id, foreignTenantId, 'Payroll Employee Record');
@@ -118,8 +116,7 @@ export const SecurityComplianceView: React.FC<SecurityComplianceViewProps> = ({
     }));
   };
 
-  // # EXPLANATION FOR FOUNDER:
-  // # Tests malicious HTML and XSS script tags to verify they are neutralized.
+  // Tests input sanitization against XSS script tags and injection patterns.
   const handleTestXss = () => {
     const maliciousInput = '<script>stealTokens();</script><img src=x onerror="alert(document.cookie)"> Johan Venter';
     const sanitized = sanitizeInput(maliciousInput);
@@ -132,8 +129,7 @@ export const SecurityComplianceView: React.FC<SecurityComplianceViewProps> = ({
     }));
   };
 
-  // # EXPLANATION FOR FOUNDER:
-  // # Demonstrates our 2-step social engineering defense shield for high-risk actions.
+  // Tests dual-confirmation defense shield for sensitive banking and ownership actions.
   const handleTestSocialEngineering = () => {
     setTestResults((prev) => ({
       ...prev,

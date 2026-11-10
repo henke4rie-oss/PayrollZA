@@ -55,8 +55,6 @@ export const SubscriptionBillingView: React.FC<SubscriptionBillingViewProps> = (
   employeeCount,
   onUpgradePlan,
 }) => {
-  const [voucherCode, setVoucherCode] = useState<string>('');
-  const [voucherMessage, setVoucherMessage] = useState<{ text: string; success: boolean } | null>(null);
   const [isProcessing, setIsProcessing] = useState<string | null>(null);
 
   // Competitor Calculator State
@@ -124,24 +122,7 @@ export const SubscriptionBillingView: React.FC<SubscriptionBillingViewProps> = (
     }, 600);
   };
 
-  const handleApplyVoucher = (e: React.FormEvent) => {
-    e.preventDefault();
-    const clean = voucherCode.trim().toUpperCase();
-    const result = storage.redeemLicenseKey(tenant.id, clean);
-    if (result.success && result.tier) {
-      onUpgradePlan(result.tier);
-      setVoucherMessage({
-        text: result.message,
-        success: true,
-      });
-      setVoucherCode('');
-    } else {
-      setVoucherMessage({
-        text: result.message || 'Invalid or expired license code. Try "FOUNDER2026" or "4MULA-30DAY-2026".',
-        success: false,
-      });
-    }
-  };
+
 
   const handleExecuteOwnershipTransfer = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -657,43 +638,23 @@ export const SubscriptionBillingView: React.FC<SubscriptionBillingViewProps> = (
 
       {/* Voucher Code Redemption & PayFast Gateway Integration */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Voucher Form */}
+        {/* Subscription Status Card */}
         <div className="bg-slate-900/95 border border-slate-700/80 rounded-2xl p-5 shadow-xl shadow-black/20 space-y-3">
           <h2 className="text-sm font-bold text-white flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-amber-400" />
-            <span>Redeem Partner or Grant Voucher Code</span>
+            <Sparkles className="w-4 h-4 text-emerald-400" />
+            <span>Workspace Subscription Status</span>
           </h2>
-          <p className="text-xs text-slate-400">
-            Enter a promotional or founder grant code to unlock Business Pro features with zero credit card required.
+          <p className="text-xs text-slate-400 leading-relaxed">
+            Current Tier: <strong className="text-white uppercase">{tenant.tier}</strong>. To upgrade plans or request dedicated multi-company practice onboarding, contact support at support@payrollza.co.za.
           </p>
-
-          <form onSubmit={handleApplyVoucher} className="flex gap-2">
-            <input
-              type="text"
-              placeholder="e.g. FOUNDER2026"
-              value={voucherCode}
-              onChange={(e) => setVoucherCode(e.target.value)}
-              className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white uppercase font-mono focus:outline-none focus:ring-1 focus:ring-emerald-500"
-            />
-            <button
-              type="submit"
-              className="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white rounded-xl text-xs font-bold transition-colors"
-            >
-              Apply Code
-            </button>
-          </form>
-
-          {voucherMessage && (
-            <div
-              className={`p-3 rounded-xl text-xs ${
-                voucherMessage.success
-                  ? 'bg-emerald-950/60 text-emerald-300 border border-emerald-800'
-                  : 'bg-red-950/60 text-red-300 border border-red-800'
-              }`}
-            >
-              {voucherMessage.text}
-            </div>
-          )}
+          <div className="flex items-center gap-2 text-xs text-slate-300 pt-1">
+            <span className="px-2.5 py-1 rounded-lg bg-slate-800 border border-slate-700 text-[11px] font-mono">
+              Status: ACTIVE
+            </span>
+            <span className="text-slate-400 text-[11px]">
+              Unlimited statutory payroll and compliance records
+            </span>
+          </div>
         </div>
 
         {/* South African Payment Gateway Box */}

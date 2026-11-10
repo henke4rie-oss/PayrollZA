@@ -10,7 +10,9 @@ import {
   validateSouthAfricanId,
   isBelowTaxThreshold,
   calculateRebates,
+  calculateAgeFromDateOfBirth,
 } from './taxEngine';
+import { INITIAL_EMPLOYEES } from './storage';
 
 test('Tax Thresholds: Under 65 tax threshold is R99,000', () => {
   assert.equal(isBelowTaxThreshold(99000, 30), true);
@@ -114,4 +116,28 @@ test('SA ID Validation: rejects invalid lengths and bad checksums', () => {
   assert.equal(valid.isValid, true);
   assert.equal(valid.gender, 'M');
   assert.equal(valid.isCitizen, true);
+});
+
+test('calculateAgeFromDateOfBirth: derives age correctly for day before, of, and after birthday', () => {
+  const dob = '2000-05-15';
+
+  // Day before birthday (May 14, 2026)
+  const dayBefore = new Date(2026, 4, 14);
+  assert.equal(calculateAgeFromDateOfBirth(dob, dayBefore), 25);
+
+  // Exact birthday (May 15, 2026)
+  const birthday = new Date(2026, 4, 15);
+  assert.equal(calculateAgeFromDateOfBirth(dob, birthday), 26);
+
+  // Day after birthday (May 16, 2026)
+  const dayAfter = new Date(2026, 4, 16);
+  assert.equal(calculateAgeFromDateOfBirth(dob, dayAfter), 26);
+});
+
+test('Seeded Employee IDs: all 4 seeded employee IDs pass validateSouthAfricanId', () => {
+  assert.equal(INITIAL_EMPLOYEES.length, 4);
+  for (const emp of INITIAL_EMPLOYEES) {
+    const res = validateSouthAfricanId(emp.idNumber);
+    assert.equal(res.isValid, true, `Seeded ID ${emp.idNumber} for ${emp.fullName} must pass validation`);
+  }
 });

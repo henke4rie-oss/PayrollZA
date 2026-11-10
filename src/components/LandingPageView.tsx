@@ -90,25 +90,7 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
   const annualSavingsVsSimplePay = Math.max(0, (simplePayMonthly - fourMulaMonthly) * 12);
   const annualSavingsVsSage = Math.max(0, (sageMonthly - fourMulaMonthly) * 12);
 
-  // Handle License Activation
-  const handleRedeemKey = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!enteredLicenseKey.trim()) return;
 
-    const res = storage.redeemLicenseKey(activeTenant.id, enteredLicenseKey);
-    setActivationFeedback({
-      success: res.success,
-      message: res.message,
-    });
-
-    if (res.success) {
-      setTimeout(() => {
-        setShowLicenseModal(false);
-        setActivationFeedback(null);
-        onLaunchApp();
-      }, 2000);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-slate-950">
@@ -797,57 +779,29 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
               </div>
             )}
 
-            {/* Enter Code Form */}
-            <form onSubmit={handleRedeemKey} className="space-y-3 text-xs">
-              <div>
-                <label htmlFor="license-code-input" className="block text-slate-300 font-bold mb-1">
-                  Have a 30-Day Activation Code?
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    id="license-code-input"
-                    type="text"
-                    value={enteredLicenseKey}
-                    onChange={(e) => setEnteredLicenseKey(e.target.value)}
-                    placeholder="e.g. FOUNDER2026 or 4MULA-30DAY-2026"
-                    className="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono uppercase focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                  />
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-colors shrink-0"
-                  >
-                    Activate
-                  </button>
-                </div>
-                <p className="text-[10px] text-slate-400 mt-1">
-                  Tip: Use <strong>FOUNDER2026</strong> for instant 30-day Pro access.
-                </p>
-              </div>
-            </form>
-
-            {/* Contact Options Box */}
+            {/* Access Request Information */}
             <div className="p-4 bg-slate-950/80 border border-slate-800 rounded-xl space-y-3 text-xs">
               <span className="font-bold text-slate-300 block">
-                Don't have an activation code yet?
+                Request Practice or Company Workspace Access
               </span>
               <p className="text-slate-400 text-[11px] leading-relaxed">
-                To prevent unauthorized usage and protect client data, Henke issues pilot codes directly to South African business owners and accounting practitioners.
+                To prevent unauthorized usage and protect client data, access accounts are provisioned directly for verified South African business owners and accounting practitioners.
               </p>
 
               <div className="space-y-2 pt-1">
                 <a
-                  href={`mailto:henke4rie@gmail.com?subject=4mula%20WorkOS%20Access%20Pilot%20Request&body=Hi%20Henke,%0A%0AI%20would%20like%20to%20request%20a%2030-day%20pilot%20activation%20code%20for%204mula%20WorkOS.%0A%0ACompany%20Name:%20%0ANumber%20of%20Employees:%20%0AAccountant%20or%20Business%20Owner:%20%0A%0AThanks!`}
+                  href={`mailto:henke@example.com?subject=PayrollZA%20Access%20Pilot%20Request&body=Hi%20Henke,%0A%0AI%20would%20like%20to%20request%20an%20access%20pilot%20for%20PayrollZA.%0A%0ACompany%20Name:%20%0ANumber%20of%20Employees:%20%0AAccountant%20or%20Business%20Owner:%20%0A%0AThanks!`}
                   className="flex items-center justify-between p-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 transition-colors"
                 >
                   <div className="flex items-center gap-2">
                     <Mail className="w-4 h-4 text-emerald-400" />
-                    <span>Email Henke (henke4rie@gmail.com)</span>
+                    <span>Email Access Desk (henke@example.com)</span>
                   </div>
                   <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
                 </a>
 
                 <a
-                  href={`https://wa.me/?text=Hi%20Henke,%20I'm%20interested%20in%20testing%204mula%20WorkOS%20payroll%20for%20my%20business/practice.%20Please%20send%20me%20a%2030-day%20pilot%20activation%20code.`}
+                  href={`https://wa.me/?text=Hi%20Henke,%20I'm%20interested%20in%20testing%20PayrollZA%20payroll%20for%20my%20business/practice.%20Please%20send%20me%20pilot%20access%20details.`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-between p-2.5 rounded-lg bg-emerald-950/40 hover:bg-emerald-950/70 border border-emerald-500/40 text-emerald-300 transition-colors"

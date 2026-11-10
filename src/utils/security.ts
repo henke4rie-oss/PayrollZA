@@ -12,11 +12,7 @@ This module implements enterprise-grade security controls:
 
 import { AuditLogEntry, UserRole } from '../types';
 
-// # EXPLANATION FOR FOUNDER:
-// # This function creates a SHA-256 digital fingerprint (hash) of a payroll run.
-// # Why this protects you legally: Under the South African Tax Administration Act (Section 29),
-// # if SARS audits an employer or an employee disputes their pay, this cryptographic hash
-// # proves that the payslip or payroll run has NOT been modified or tampered with since calculation.
+// Generates a SHA-256 digital fingerprint (hash) of a payroll run for audit integrity.
 export async function generateSha256Checksum(payload: string): Promise<string> {
   // # Check if browser crypto API is available (works offline and on low-end hardware)
   if (typeof crypto !== 'undefined' && crypto.subtle) {
@@ -38,10 +34,7 @@ export async function generateSha256Checksum(payload: string): Promise<string> {
   return `sha256-mock-${Math.abs(hash1).toString(16)}${Math.abs(hash2).toString(16)}00000000`.slice(0, 64);
 }
 
-// # EXPLANATION FOR FOUNDER:
-// # IDOR (Insecure Direct Object Reference) is the #1 vulnerability in multi-tenant SaaS.
-// # If Tenant A tries to request an employee or payslip that belongs to Tenant B by guessing the ID,
-// # this validator immediately catches and blocks the unauthorized cross-tenant breach.
+// IDOR validator to enforce multi-tenant isolation and prevent cross-tenant access.
 export function validateTenantAccess(
   activeTenantId: string,
   resourceTenantId: string,
@@ -64,11 +57,7 @@ export function validateTenantAccess(
   return { allowed: true };
 }
 
-// # EXPLANATION FOR FOUNDER:
-// # XSS (Cross-Site Scripting) Prevention:
-// # When importing names, company details, or employee notes from messy spreadsheets,
-// # attackers or corrupted files could inject malicious <script> or HTML tags.
-// # This function neutralizes harmful characters before rendering.
+// Neutralizes malicious HTML and script tags to prevent XSS vulnerabilities.
 export function sanitizeInput(input: string): string {
   if (!input) return '';
   return input
@@ -81,11 +70,7 @@ export function sanitizeInput(input: string): string {
     .trim();
 }
 
-// # EXPLANATION FOR FOUNDER:
-// # POPIA (Protection of Personal Information Act) Data Masking:
-// # South Africa's POPIA law mandates that sensitive personal data (like 13-digit RSA IDs and bank accounts)
-// # should not be visibly exposed to unauthorized team members (like general auditors or peers).
-// # This masks all but the first 6 digits (birth date) and last 3 digits.
+// Masks South African 13-digit ID numbers for POPIA compliance.
 export function maskSouthAfricanId(idNumber: string): string {
   if (!idNumber) return '';
   const cleaned = idNumber.replace(/\s+/g, '');
@@ -101,14 +86,7 @@ export function maskBankAccount(accountNumber?: string): string {
   return `••••${clean.slice(-4)}`;
 }
 
-// # EXPLANATION FOR FOUNDER:
-// # Role-Based Access Control (RBAC) Permission Matrix:
-// # Ensures proper segregation of duties:
-// # - Owner: Complete control, billing, invitations, tenant settings.
-// # - Admin: Can manage employees, run payroll, view tax reports.
-// # - Payroll Officer: Can edit employee salary details and generate payslips, but cannot change billing.
-// # - Auditor: Read-only access to tax records and audit logs; cannot edit salaries or run payroll.
-// # - Employee: Can only view their own personal payslips.
+// Role-Based Access Control (RBAC) Permission Matrix enforcing segregation of duties.
 export const PERMISSIONS_MATRIX: Record<UserRole, {
   canRunPayroll: boolean;
   canEditEmployees: boolean;
@@ -169,10 +147,7 @@ export function hasPermission(role: UserRole, permission: keyof (typeof PERMISSI
   return PERMISSIONS_MATRIX[role]?.[permission] ?? false;
 }
 
-// # EXPLANATION FOR FOUNDER:
-// # SARS Statutory Data Retention Checker (Section 29 of Tax Administration Act 28 of 2011):
-// # All employers MUST retain payroll records for a minimum of 5 years from the date of submission.
-// # This helper calculates whether a payroll record is within the mandatory retention window.
+// SARS Statutory Data Retention Checker (Section 29 of Tax Administration Act 28 of 2011).
 export function checkRetentionCompliance(recordDateStr: string): {
   isRetainedLegally: boolean;
   yearsRetained: number;

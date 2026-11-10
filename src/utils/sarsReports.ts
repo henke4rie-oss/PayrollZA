@@ -18,11 +18,8 @@ import {
   Employee,
 } from '../types';
 
-// # EXPLANATION FOR FOUNDER:
-// # SARS EMP201 Monthly Declaration:
-// # Every registered employer in South Africa must file an EMP201 return and pay PAYE, UIF,
-// # and SDL to SARS by the 7th of every month.
-// # This function calculates the exact liability breakdown for submission on SARS eFiling.
+// SARS EMP201 Monthly Declaration:
+// Calculates exact PAYE, UIF, SDL, and ETI liability for submission on SARS eFiling.
 export function generateEmp201(
   payrollRun: PayrollRun,
   tenant: Tenant,
@@ -60,13 +57,7 @@ export function generateEmp201(
   };
 }
 
-// # EXPLANATION FOR FOUNDER:
-// # SARS IRP5 / IT3(a) Tax Certificate Generator:
-// # Code 3601: Taxable salary / wages (Gross)
-// # Code 4102: PAYE deducted from employee
-// # Code 4141: UIF employee contribution deducted
-// # Code 4142: SDL paid by employer
-// # Code 4118: Employment Tax Incentive (ETI) claimed
+// SARS IRP5 / IT3(a) Tax Certificate Generator (Codes 3601, 4102, 4141, 4142, 4118).
 export function generateIrp5Certificates(
   payrollRun: PayrollRun,
   employees: Employee[],
@@ -95,11 +86,7 @@ export function generateIrp5Certificates(
   });
 }
 
-// # EXPLANATION FOR FOUNDER:
-// # BCEA (Basic Conditions of Employment Act) and National Minimum Wage (NMW) Compliance:
-// # South Africa's statutory National Minimum Wage is R27.58 per ordinary hour worked (effective 2024-2026).
-// # For standard 45-hour work week (~195 hours/month), monthly salary must be at least R5,378.10.
-// # This auditor detects any labor law risks before you run payroll.
+// BCEA and National Minimum Wage (NMW) statutory compliance auditor.
 export interface BceaAuditResult {
   employeeId: string;
   employeeName: string;
@@ -139,7 +126,7 @@ export function auditBceaCompliance(employees: Employee[], standardMonthlyHours:
   });
 }
 
-// # EXPLANATION FOR FOUNDER:
+// Export completed payroll run to CSV format.
 export function exportPayrollToCsv(payrollRun: PayrollRun): string {
   const headers = [
     'Employee ID',
@@ -195,11 +182,7 @@ export function exportPayrollToCsv(payrollRun: PayrollRun): string {
   ].join('\n');
 }
 
-// # EXPLANATION FOR FOUNDER:
-// # Department of Employment and Labour (DoEL) UI-19 Declaration:
-// # Employers in South Africa must submit monthly electronic UI-19 returns to the UIF Commissioner
-// # containing all active employees, identification, gross remuneration, and employment status.
-// # This completely replaces manual paper forms and can be uploaded to uFiling or emailed to declarations@uif.gov.za.
+// Department of Employment and Labour (DoEL) UI-19 Declaration electronic file generator.
 export function generateUi19Submission(payrollRun: PayrollRun, tenant: Tenant, employees: Employee[]): string {
   const employeeMap = new Map<string, Employee>();
   employees.forEach((emp) => employeeMap.set(emp.id, emp));
@@ -229,11 +212,7 @@ export function generateUi19Submission(payrollRun: PayrollRun, tenant: Tenant, e
   return [header, ...bodyRecords, trailer].join('\n');
 }
 
-// # EXPLANATION FOR FOUNDER:
-// # COIDA (Compensation for Occupational Injuries and Diseases Act) W.As.8 Return of Earnings:
-// # Every business must submit an annual W.As.8 return to the Compensation Commissioner by 31 March.
-// # Earnings are capped at the statutory ceiling (R568,959 per employee per year for 2025/2026).
-// # 4mula calculates both actual and capped earnings and generates the exact figures for the Department of Labour.
+// COIDA (Compensation for Occupational Injuries and Diseases Act) W.As.8 Return of Earnings.
 export function generateCoidaReturn(payrollRun: PayrollRun, tenant: Tenant, employees: Employee[]) {
   const ANNUAL_COIDA_CEILING = 568959; // Statutory maximum earnings per employee per year
   const MONTHLY_COIDA_CEILING = ANNUAL_COIDA_CEILING / 12; // ~R47,413.25
@@ -269,11 +248,7 @@ export function generateCoidaReturn(payrollRun: PayrollRun, tenant: Tenant, empl
   };
 }
 
-// # EXPLANATION FOR FOUNDER:
-// # EMP501 Bi-Annual & Annual SARS Reconciliation:
-// # Reconciles the monthly EMP201 declarations vs actual payments made vs IRP5 certificates issued.
-// # SARS fines employers 10% for late or unbalanced EMP501 filings.
-// # 4mula verifies that EMP201 totals match IRP5 totals exactly to ensure a 100% balanced return.
+// EMP501 Bi-Annual & Annual SARS Reconciliation.
 export function generateEmp501Reconciliation(
   payrollRuns: PayrollRun[],
   tenant: Tenant,
@@ -315,10 +290,7 @@ export function generateEmp501Reconciliation(
   };
 }
 
-// # EXPLANATION FOR FOUNDER:
-// # SARS e@syFile CSV Batch Export (IRP5 / IT3(a) Electronic Submission):
-// # Generates the exact comma-delimited layout formatted according to the official
-// # SARS Business Requirements Specification (BRS) for electronic certificates.
+// SARS e@syFile CSV Batch Export (IRP5 / IT3(a) Electronic Submission).
 export function generateEasyFileCsv(payrollRun: PayrollRun, tenant: Tenant, employees: Employee[]): string {
   const employeeMap = new Map<string, Employee>();
   employees.forEach((emp) => employeeMap.set(emp.id, emp));
@@ -356,10 +328,7 @@ export function generateEasyFileCsv(payrollRun: PayrollRun, tenant: Tenant, empl
   return records.join('\n');
 }
 
-// # EXPLANATION FOR FOUNDER:
-// # ETI (Employment Tax Incentive) Audit Schedule:
-// # In an audit, SARS demands proof that qualifying youth met the age (18-29) and wage (R2,000 - R7,500) brackets.
-// # This schedule provides immediate proof with RSA ID, derived age, gross remuneration, and calculated incentive.
+// ETI (Employment Tax Incentive) Audit Schedule generator.
 export function generateEtiAuditSchedule(payrollRun: PayrollRun, employees: Employee[]): string {
   const employeeMap = new Map<string, Employee>();
   employees.forEach((emp) => employeeMap.set(emp.id, emp));

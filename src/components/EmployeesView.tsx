@@ -6,6 +6,7 @@ Features:
 2. Add / Edit Employee modal with real-time RSA ID Luhn checksum validation & auto age extraction
 3. Smart Spreadsheet / CSV Importer:
    - Heuristically detects columns without needing exact headers (13 digits -> RSA ID, age, salary, employee code)
+   - Ported and enhanced from PayrollZA importer_47ad4bdf.py
 """
 */
 
@@ -25,9 +26,10 @@ import {
   Edit2,
   ShieldCheck,
   Building,
+  RefreshCw,
 } from 'lucide-react';
 import { Employee, Tenant, UserRole } from '../types';
-import { validateSouthAfricanId } from '../utils/taxEngine';
+import { validateSouthAfricanId, calculateAgeFromDateOfBirth } from '../utils/taxEngine';
 import { maskBankAccount, maskSouthAfricanId, hasPermission } from '../utils/security';
 import {
   parseCsvText,
@@ -88,6 +90,8 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
   const [formError, setFormError] = useState<string | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
   const [pageNotice, setPageNotice] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  const [isValidatingId, setIsValidatingId] = useState<boolean>(false);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
 
   const canEdit = hasPermission(currentUserRole, 'canEditEmployees');
 
@@ -103,14 +107,19 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
 
   const departments = Array.from(new Set(employees.map((e) => e.department)));
 
-  // # Handle RSA ID Change with real-time Luhn calculation
+  // Handle RSA ID Change with real-time Luhn calculation
   const handleIdChange = (value: string) => {
     setIdNumber(value);
     if (value.trim().length >= 13) {
-      const check = validateSouthAfricanId(value);
-      setIdValidation(check);
+      setIsValidatingId(true);
+      setTimeout(() => {
+        const check = validateSouthAfricanId(value);
+        setIdValidation(check);
+        setIsValidatingId(false);
+      }, 150);
     } else {
       setIdValidation(null);
+      setIsValidatingId(false);
     }
   };
 
@@ -128,40 +137,42 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
       return;
     }
 
-    let age = 30;
-    if (idValidation && idValidation.isValid && idValidation.age) {
-      age = idValidation.age;
-    }
+    setIsSaving(true);
+    setTimeout(() => {
+      const dob = idValidation?.birthDate || '1995-01-01';
+      const age = calculateAgeFromDateOfBirth(dob);
 
-    const newEmp: Employee = {
-      id: `emp-${Date.now()}`,
-      tenantId: tenant.id,
-      employeeNumber: employeeNumber || `EMP${String(employees.length + 1).padStart(3, '0')}`,
-      fullName,
-      idNumber: idNumber || '9901015009087',
-      idType: 'rsa_id',
-      dateOfBirth: idValidation?.birthDate || '1995-01-01',
-      age,
-      gender: idValidation?.gender || 'M',
-      jobTitle: jobTitle || 'General Staff',
-      department: department || 'General',
-      grossMonthlySalary,
-      startDate: new Date().toISOString().split('T')[0],
-      isActive: true,
-      bankName,
-      bankAccountNumber: bankAccount,
-      bankBranchCode: '250655',
-    };
+      const newEmp: Employee = {
+        id: `emp-${Date.now()}`,
+        tenantId: tenant.id,
+        employeeNumber: employeeNumber || `EMP${String(employees.length + 1).padStart(3, '0')}`,
+        fullName,
+        idNumber: idNumber || '9901015009087',
+        idType: 'rsa_id',
+        dateOfBirth: dob,
+        age,
+        gender: idValidation?.gender || 'M',
+        jobTitle: jobTitle || 'General Staff',
+        department: department || 'General',
+        grossMonthlySalary,
+        startDate: new Date().toISOString().split('T')[0],
+        isActive: true,
+        bankName,
+        bankAccountNumber: bankAccount,
+        bankBranchCode: '250655',
+      };
 
-    onSaveEmployee(newEmp);
-    setIsAddModalOpen(false);
-    // Reset form
-    setFullName('');
-    setEmployeeNumber('');
-    setIdNumber('');
-    setSalary('');
-    setJobTitle('');
-    setIdValidation(null);
+      onSaveEmployee(newEmp);
+      setIsSaving(false);
+      setIsAddModalOpen(false);
+      // Reset form
+      setFullName('');
+      setEmployeeNumber('');
+      setIdNumber('');
+      setSalary('');
+      setJobTitle('');
+      setIdValidation(null);
+    }, 200);
   };
 
   // # Smart Heuristic CSV Importer Trigger
@@ -205,6 +216,7 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
 
     parsedImportRows.forEach((row, idx) => {
       if (row.isValid) {
+        const dob = '1995-01-01';
         const newEmp: Employee = {
           id: `emp-imp-${Date.now()}-${idx}`,
           tenantId: tenant.id,
@@ -212,8 +224,8 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
           fullName: row.fullName,
           idNumber: row.idNumber || '8501015009087',
           idType: 'rsa_id',
-          dateOfBirth: '1995-01-01',
-          age: row.age || 30,
+          dateOfBirth: dob,
+          age: calculateAgeFromDateOfBirth(dob),
           jobTitle: 'Imported Staff',
           department: 'Operations',
           grossMonthlySalary: row.grossSalary,
@@ -490,8 +502,14 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
                     placeholder="YYMMDD GSSS C A Z"
                     className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-1.5 text-white focus:outline-none focus:ring-1 focus:ring-emerald-500 font-mono"
                   />
-                  {/* ID Validation Feedback */}
-                  {idValidation && (
+                  {/* ID Validation Feedback & Loading */}
+                  {isValidatingId && (
+                    <div className="mt-1.5 p-2 rounded text-[11px] text-slate-400 bg-slate-950/80 border border-slate-800 flex items-center gap-2">
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin text-emerald-400 shrink-0" />
+                      <span>Validating 13-digit SA ID number...</span>
+                    </div>
+                  )}
+                  {!isValidatingId && idValidation && (
                     <div className="mt-1.5 p-2 rounded text-[11px] font-sans">
                       {idValidation.isValid ? (
                         <div className="text-emerald-400 bg-emerald-950/50 border border-emerald-800/40 p-2 rounded flex items-center gap-2">
@@ -569,9 +587,11 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded font-bold shadow"
+                  disabled={isSaving || isValidatingId}
+                  className="flex items-center gap-1.5 px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded font-bold shadow transition-colors disabled:opacity-50"
                 >
-                  Save Employee
+                  {isSaving && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
+                  <span>{isSaving ? 'Saving...' : 'Save Employee'}</span>
                 </button>
               </div>
             </form>

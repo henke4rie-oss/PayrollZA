@@ -1,6 +1,7 @@
 /*
 """
 Smart Spreadsheet & CSV Importer for South African Payroll
+Ported and enhanced from PayrollZA importer_47ad4bdf.py.
 Heuristically detects columns from actual cell data rather than relying strictly on headers:
 - 13 digits -> RSA ID number
 - Number under 100 -> Age
@@ -36,9 +37,8 @@ export interface ParsedEmployeeRow {
   rawData: string[];
 }
 
-// # EXPLANATION FOR FOUNDER:
-// # Parses raw CSV text into a 2D array of string cells.
-// # Accurately handles quoted fields containing commas, line breaks, and whitespace.
+// Parses raw CSV text into a 2D array of string cells.
+// Accurately handles quoted fields containing commas, line breaks, and whitespace.
 export function parseCsvText(csvContent: string): string[][] {
   const rows: string[][] = [];
   let currentRow: string[] = [];
@@ -84,8 +84,7 @@ export function parseCsvText(csvContent: string): string[][] {
   return rows;
 }
 
-// # EXPLANATION FOR FOUNDER:
-// # Checks if the first row is likely a header row by checking for common SA payroll keywords.
+// Checks if the first row is likely a header row by checking for common SA payroll keywords.
 export function detectHeaderRow(rows: string[][]): boolean {
   if (rows.length === 0) return false;
   const headerKeywords = [
@@ -105,8 +104,7 @@ export function detectHeaderRow(rows: string[][]): boolean {
   return matches >= Math.max(1, Math.floor(firstRow.length / 2));
 }
 
-// # EXPLANATION FOR FOUNDER:
-// # Classifies an individual value using the heuristic rules from your Python codebase.
+// Classifies an individual value using heuristic payroll rules.
 export function classifyCellValue(value: string): DetectedColumnType {
   if (!value) return 'unknown';
 
@@ -147,8 +145,7 @@ export function classifyCellValue(value: string): DetectedColumnType {
   return 'unknown';
 }
 
-// # EXPLANATION FOR FOUNDER:
-// # Analyzes every column across all rows to determine the most statistically probable column type.
+// Analyzes every column across all rows to determine the most statistically probable column type.
 export function detectColumns(dataRows: string[][]): ColumnDetection[] {
   if (dataRows.length === 0) return [];
   const maxCols = Math.max(...dataRows.map((r) => r.length));
@@ -219,8 +216,7 @@ export function detectColumns(dataRows: string[][]): ColumnDetection[] {
   return columns;
 }
 
-// # EXPLANATION FOR FOUNDER:
-// # Converts the parsed rows into verified employee records based on the confirmed column mapping.
+// Converts parsed rows into verified employee records based on confirmed column mapping.
 export function buildEmployeesFromRows(
   dataRows: string[][],
   columns: ColumnDetection[],

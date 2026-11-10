@@ -36,7 +36,7 @@ export default function App() {
 
   // # User Authentication & RBAC Simulation State
   const [currentUser, setCurrentUser] = useState<User>(storage.getCurrentUser());
-  const [currentUserRole, setCurrentUserRole] = useState<UserRole>(storage.getCurrentRole());
+  const [currentUserRole, setCurrentUserRole] = useState<UserRole>(storage.getCurrentUserRole());
 
   // # Tenant Data (Strictly isolated by activeTenant.id)
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -55,10 +55,7 @@ export default function App() {
     }
   }, [activeTenantId, activeTenant]);
 
-  // # EXPLANATION FOR FOUNDER:
-  // # Tenant Switching Handler:
-  // # When switching from "Van Wyk Agri" to "CapeTech", the storage layer ensures
-  // # zero data bleeding. All employee records, salaries, and payslips are isolated.
+  // Tenant Switching Handler
   const handleSelectTenant = (tenantId: string) => {
     storage.setActiveTenantId(tenantId);
     setActiveTenantId(tenantId);

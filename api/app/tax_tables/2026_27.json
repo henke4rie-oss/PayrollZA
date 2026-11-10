@@ -1,0 +1,69 @@
+{
+  "tax_year": "2026/2027",
+  "effective_from": "2026-03-01",
+  "effective_to": "2027-02-28",
+  "brackets": [
+    {
+      "threshold_from": "0.00",
+      "threshold_to": "245100.00",
+      "base_tax": "0.00",
+      "rate": "0.18"
+    },
+    {
+      "threshold_from": "245100.00",
+      "threshold_to": "383100.00",
+      "base_tax": "44118.00",
+      "rate": "0.26"
+    },
+    {
+      "threshold_from": "383100.00",
+      "threshold_to": "530200.00",
+      "base_tax": "79998.00",
+      "rate": "0.31"
+    },
+    {
+      "threshold_from": "530200.00",
+      "threshold_to": "695800.00",
+      "base_tax": "125599.00",
+      "rate": "0.36"
+    },
+    {
+      "threshold_from": "695800.00",
+      "threshold_to": "887000.00",
+      "base_tax": "185215.00",
+      "rate": "0.39"
+    },
+    {
+      "threshold_from": "887000.00",
+      "threshold_to": "1878600.00",
+      "base_tax": "259783.00",
+      "rate": "0.41"
+    },
+    {
+      "threshold_from": "1878600.00",
+      "threshold_to": null,
+      "base_tax": "666339.00",
+      "rate": "0.45"
+    }
+  ],
+  "rebates": {
+    "primary": "17820.00",
+    "secondary": "9765.00",
+    "tertiary": "3249.00"
+  },
+  "tax_thresholds": {
+    "under_65": "99000.00",
+    "age_65_to_74": "153250.00",
+    "age_75_and_over": "171300.00"
+  },
+  "uif": {
+    "employee_rate": "0.01",
+    "employer_rate": "0.01",
+    "monthly_ceiling": "17712.00",
+    "max_monthly_deduction": "177.12"
+  },
+  "sdl": {
+    "rate": "0.01",
+    "annual_exemption_threshold": "500000.00"
+  }
+}

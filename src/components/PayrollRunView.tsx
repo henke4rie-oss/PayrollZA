@@ -7,6 +7,7 @@ Calculates monthly payroll batch for all active employees:
 - SDL calculations (with R500k employer exemption support)
 - ETI (Employment Tax Incentive) youth incentive
 - Cryptographic SHA-256 seal for tamper evidence (TAA Section 29)
+- One-click CSV export matching csv_exporter_4ab3bfeb.py
 """
 */
 
@@ -23,6 +24,7 @@ import {
   Sparkles,
   Landmark,
   MessageCircle,
+  RefreshCw,
 } from 'lucide-react';
 import { Employee, PayrollRun, Payslip, Tenant, UserRole } from '../types';
 import { calculatePayroll } from '../utils/taxEngine';
@@ -59,16 +61,11 @@ export const PayrollRunView: React.FC<PayrollRunViewProps> = ({
   const activeEmployees = employees.filter((e) => e.isActive);
   const canRun = hasPermission(currentUserRole, 'canRunPayroll');
 
-  // # EXPLANATION FOR FOUNDER:
-  // # Generates a compliant, safe pre-filled WhatsApp link for payslip notification.
   const getWhatsappUrl = (slip: Payslip) => {
     const text = `Hi ${slip.employeeName}, your official payslip for period ${slip.period} from ${tenant.name} is ready. Gross: R${slip.grossMonthly.toLocaleString(undefined, { minimumFractionDigits: 2 })} | Net Take-Home: R${slip.netPay.toLocaleString(undefined, { minimumFractionDigits: 2 })}. (BCEA Section 33 Compliant).`;
     return `https://wa.me/?text=${encodeURIComponent(text)}`;
   };
 
-  // # EXPLANATION FOR FOUNDER:
-  // # Executes synchronous batch calculation across all active employees.
-  // # Ultra-fast: computes 100+ employees in < 5 milliseconds.
   const handleExecutePayroll = async () => {
     if (!canRun) {
       setNotification('Permission Denied: Your current role (Auditor / Employee) is read-only.');
@@ -81,66 +78,65 @@ export const PayrollRunView: React.FC<PayrollRunViewProps> = ({
 
     setIsCalculating(true);
 
-    const generatedPayslips: Payslip[] = activeEmployees.map((emp) => {
-      const calc = calculatePayroll(emp.grossMonthlySalary, emp.age, tenant.isSdlExempt);
-      return {
-        id: `slip-${emp.id}-${period.replace('/', '')}-${Date.now()}`,
+    setTimeout(() => {
+      const generatedPayslips: Payslip[] = activeEmployees.map((emp) => {
+        const calc = calculatePayroll(emp.grossMonthlySalary, emp.age, tenant.isSdlExempt);
+        return {
+          id: `slip-${emp.id}-${period.replace('/', '')}-${Date.now()}`,
+          tenantId: tenant.id,
+          payrollRunId: `run-${tenant.id}-${period.replace('/', '')}`,
+          employeeId: emp.id,
+          employeeNumber: emp.employeeNumber,
+          employeeName: emp.fullName,
+          period,
+          age: emp.age,
+          grossMonthly: calc.grossMonthly,
+          paye: calc.monthlyPaye,
+          uifEmployee: calc.uifEmployee,
+          uifEmployer: calc.uifEmployer,
+          sdl: calc.sdlAmount,
+          eti: calc.etiAmount,
+          netPay: calc.netPay,
+          totalEmployerCost: calc.totalEmployerCost,
+          generatedAt: new Date().toISOString(),
+        };
+      });
+
+      const totalGross = Math.round(generatedPayslips.reduce((acc, s) => acc + s.grossMonthly, 0) * 100) / 100;
+      const totalPaye = Math.round(generatedPayslips.reduce((acc, s) => acc + s.paye, 0) * 100) / 100;
+      const totalUifEmp = Math.round(generatedPayslips.reduce((acc, s) => acc + s.uifEmployee, 0) * 100) / 100;
+      const totalUifEmpr = Math.round(generatedPayslips.reduce((acc, s) => acc + s.uifEmployer, 0) * 100) / 100;
+      const totalSdl = Math.round(generatedPayslips.reduce((acc, s) => acc + s.sdl, 0) * 100) / 100;
+      const totalEti = Math.round(generatedPayslips.reduce((acc, s) => acc + s.eti, 0) * 100) / 100;
+      const totalNet = Math.round(generatedPayslips.reduce((acc, s) => acc + s.netPay, 0) * 100) / 100;
+      const totalCost = Math.round(generatedPayslips.reduce((acc, s) => acc + s.totalEmployerCost, 0) * 100) / 100;
+
+      const newRun: PayrollRun = {
+        id: `run-${tenant.id}-${period.replace('/', '')}`,
         tenantId: tenant.id,
-        payrollRunId: `run-${tenant.id}-${period.replace('/', '')}`,
-        employeeId: emp.id,
-        employeeNumber: emp.employeeNumber,
-        employeeName: emp.fullName,
         period,
-        age: emp.age,
-        grossMonthly: calc.grossMonthly,
-        paye: calc.monthlyPaye,
-        uifEmployee: calc.uifEmployee,
-        uifEmployer: calc.uifEmployer,
-        sdl: calc.sdlAmount,
-        eti: calc.etiAmount,
-        netPay: calc.netPay,
-        totalEmployerCost: calc.totalEmployerCost,
-        generatedAt: new Date().toISOString(),
+        companyName: tenant.name,
+        createdAt: new Date().toISOString(),
+        status: 'draft',
+        payslips: generatedPayslips,
+        totalGross,
+        totalPaye,
+        totalUifEmployee: totalUifEmp,
+        totalUifEmployer: totalUifEmpr,
+        totalSdl,
+        totalEti,
+        totalNet,
+        totalEmployerCost: totalCost,
+        employeeCount: generatedPayslips.length,
       };
-    });
 
-    const totalGross = Math.round(generatedPayslips.reduce((acc, s) => acc + s.grossMonthly, 0) * 100) / 100;
-    const totalPaye = Math.round(generatedPayslips.reduce((acc, s) => acc + s.paye, 0) * 100) / 100;
-    const totalUifEmp = Math.round(generatedPayslips.reduce((acc, s) => acc + s.uifEmployee, 0) * 100) / 100;
-    const totalUifEmpr = Math.round(generatedPayslips.reduce((acc, s) => acc + s.uifEmployer, 0) * 100) / 100;
-    const totalSdl = Math.round(generatedPayslips.reduce((acc, s) => acc + s.sdl, 0) * 100) / 100;
-    const totalEti = Math.round(generatedPayslips.reduce((acc, s) => acc + s.eti, 0) * 100) / 100;
-    const totalNet = Math.round(generatedPayslips.reduce((acc, s) => acc + s.netPay, 0) * 100) / 100;
-    const totalCost = Math.round(generatedPayslips.reduce((acc, s) => acc + s.totalEmployerCost, 0) * 100) / 100;
-
-    const newRun: PayrollRun = {
-      id: `run-${tenant.id}-${period.replace('/', '')}`,
-      tenantId: tenant.id,
-      period,
-      companyName: tenant.name,
-      createdAt: new Date().toISOString(),
-      status: 'draft',
-      payslips: generatedPayslips,
-      totalGross,
-      totalPaye,
-      totalUifEmployee: totalUifEmp,
-      totalUifEmployer: totalUifEmpr,
-      totalSdl,
-      totalEti,
-      totalNet,
-      totalEmployerCost: totalCost,
-      employeeCount: generatedPayslips.length,
-    };
-
-    setActiveRun(newRun);
-    setIsCalculating(false);
-    setNotification(`Calculated payroll for ${generatedPayslips.length} employees (Period: ${period}). Review below before sealing.`);
-    setTimeout(() => setNotification(null), 5000);
+      setActiveRun(newRun);
+      setIsCalculating(false);
+      setNotification(`Calculated payroll for ${generatedPayslips.length} employees (Period: ${period}). Review below before sealing.`);
+      setTimeout(() => setNotification(null), 5000);
+    }, 200);
   };
 
-  // # EXPLANATION FOR FOUNDER:
-  // # Finalizes the draft payroll run and generates the cryptographic SHA-256 hash.
-  // # This seals the run to comply with Tax Administration Act Section 29.
   const handleFinalizeRun = async () => {
     if (!activeRun) return;
     setIsFinalizing(true);
@@ -172,7 +168,6 @@ export const PayrollRunView: React.FC<PayrollRunViewProps> = ({
     setTimeout(() => setNotification(null), 6000);
   };
 
-  // # EXPLANATION FOR FOUNDER:
   const handleExportCsv = () => {
     if (!activeRun) return;
     const csvContent = exportPayrollToCsv(activeRun);
@@ -230,8 +225,12 @@ export const PayrollRunView: React.FC<PayrollRunViewProps> = ({
               disabled={isCalculating}
               className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold shadow-md transition-colors disabled:opacity-50"
             >
-              <Play className="w-3.5 h-3.5 fill-current" />
-              <span>{isCalculating ? 'Calculating...' : 'Run Payroll Calculation'}</span>
+              {isCalculating ? (
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Play className="w-3.5 h-3.5 fill-current" />
+              )}
+              <span>{isCalculating ? 'Calculating Taxes...' : 'Run Payroll Calculation'}</span>
             </button>
           </div>
         </div>

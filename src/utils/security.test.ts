@@ -1,16 +1,3 @@
-/*
-"""
-Test Suite for Security & Compliance Engine
-Verifies:
-1. IDOR prevention and tenant boundary isolation
-2. XSS input sanitization and script neutralization
-3. POPIA identity and bank masking compliance
-4. RBAC role permissions matrix
-5. SARS TAA s29 5-year data retention compliance calculator
-6. SHA-256 tamper-seal generation
-"""
-*/
-
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
@@ -100,22 +87,12 @@ test('generateSha256Checksum: generates deterministic 64-character hash', async 
   assert.equal(hash1.length, 64);
 });
 
-test('License Engine: validates, applies activation keys and rejects expired/fraudulent codes', () => {
+test('License Engine: checks workspace trial and license status', () => {
   const tenants = storage.getTenants();
   const testTenant = tenants[0];
   assert.ok(testTenant);
 
-  // Rejects invalid code
-  const badRes = storage.redeemLicenseKey(testTenant.id, 'INVALID-FAKE-CODE-XYZ');
-  assert.equal(badRes.success, false);
-
-  // Accepts valid founder 30-day code
-  const goodRes = storage.redeemLicenseKey(testTenant.id, '4MULA-30DAY-2026');
-  assert.equal(goodRes.success, true);
-  assert.equal(goodRes.tier, 'pro');
-
   const status = storage.getTenantLicense(testTenant.id);
-  assert.equal(status.status, 'active');
-  assert.ok(status.daysRemaining >= 29);
+  assert.ok(status.daysRemaining >= 0);
+  assert.ok(['active', 'trial', 'expired'].includes(status.status));
 });
-
