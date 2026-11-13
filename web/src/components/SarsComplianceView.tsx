@@ -51,7 +51,6 @@ import {
   generateCoidaReturn,
   generateEmp501Reconciliation,
   generateEasyFileCsv,
-  generateEtiAuditSchedule,
   downloadFile,
 } from '../utils/sarsReports';
 
@@ -67,7 +66,7 @@ export const SarsComplianceView: React.FC<SarsComplianceViewProps> = ({
   payrollRuns,
 }) => {
   const [activeSubTab, setActiveSubTab] = useState<
-    'emp201' | 'emp501' | 'irp5' | 'ui19' | 'coida' | 'eti' | 'bcea'
+    'emp201' | 'emp501' | 'irp5' | 'ui19' | 'coida' | 'bcea'
   >('emp201');
   const [selectedRunId, setSelectedRunId] = useState<string>(payrollRuns[0]?.id || '');
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
@@ -147,16 +146,6 @@ export const SarsComplianceView: React.FC<SarsComplianceViewProps> = ({
     );
   };
 
-  const handleDownloadEtiSchedule = () => {
-    if (!selectedRun) return;
-    const etiCsv = generateEtiAuditSchedule(selectedRun, employees);
-    downloadFile(
-      `SARS_ETI_Audit_Schedule_${tenant.name.replace(/\s+/g, '_')}_${selectedRun.period.replace('/', '')}.csv`,
-      etiCsv,
-      'text/csv;charset=utf-8;'
-    );
-  };
-
   return (
     <div className="space-y-6">
       {/* Statutory Header Box */}
@@ -231,16 +220,6 @@ export const SarsComplianceView: React.FC<SarsComplianceViewProps> = ({
               }`}
             >
               COIDA (W.As.8)
-            </button>
-            <button
-              onClick={() => setActiveSubTab('eti')}
-              className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${
-                activeSubTab === 'eti'
-                  ? 'bg-emerald-600 text-white shadow-md shadow-emerald-950/60'
-                  : 'text-slate-300 hover:text-white hover:bg-slate-900'
-              }`}
-            >
-              Youth ETI Schedule
             </button>
             <button
               onClick={() => setActiveSubTab('bcea')}
@@ -626,45 +605,6 @@ export const SarsComplianceView: React.FC<SarsComplianceViewProps> = ({
               <span className="text-[10px] font-bold uppercase text-slate-400 font-mono">Estimated Annual Levy</span>
               <span className="font-mono font-bold text-amber-400 text-base block">R{coidaData.estimatedLevy.toLocaleString()}</span>
               <span className="text-slate-400 text-[11px]">Due to Compensation Commissioner</span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Tab 6: Youth ETI Maximizer & Audit Schedule */}
-      {activeSubTab === 'eti' && (
-        <div className="bg-slate-900/95 border border-slate-700/80 rounded-2xl p-6 shadow-xl shadow-black/30 space-y-5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-mono">
-                  ETI Act No. 26 of 2013
-                </span>
-                <span className="text-xs text-slate-400">Direct SARS Tax Incentive</span>
-              </div>
-              <h2 className="text-xl font-bold text-white mt-1">Employment Tax Incentive (ETI) Maximizer</h2>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Generates audit-proof evidence for qualifying young employees (ages 18-29, earning R2,000 - R7,500/month).
-              </p>
-            </div>
-
-            <button
-              onClick={handleDownloadEtiSchedule}
-              className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-md shadow-emerald-950/60 transition-colors"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span>Download ETI Audit Schedule</span>
-            </button>
-          </div>
-
-          <div className="p-4 bg-emerald-950/30 border border-emerald-700/50 rounded-xl flex items-start gap-3 text-xs">
-            <Sparkles className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
-            <div className="space-y-1">
-              <span className="font-bold text-white block">Automatic Youth Wage Relief Active</span>
-              <p className="text-slate-300 leading-relaxed">
-                4mula calculates and claims up to <strong>R1,500 per month</strong> for each qualifying young worker directly on your EMP201 return.
-                This reduces your SARS PAYE bill Rand-for-Rand without reducing take-home pay.
-              </p>
             </div>
           </div>
         </div>

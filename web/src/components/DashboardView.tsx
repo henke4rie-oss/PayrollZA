@@ -28,7 +28,6 @@ import {
   Eye,
 } from 'lucide-react';
 import { Employee, PayrollRun, Tenant, UserRole } from '../types';
-import { SUBSCRIPTION_PLANS } from '../utils/storage';
 
 interface DashboardViewProps {
   tenant: Tenant;
@@ -48,7 +47,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onViewPayslip,
 }) => {
   const activeEmployees = employees.filter((e) => e.isActive);
-  const currentPlan = SUBSCRIPTION_PLANS.find((p) => p.id === tenant.tier) || SUBSCRIPTION_PLANS[0];
   const latestRun = payrollRuns[0];
 
   // # Calculate summary figures from latest run
@@ -111,7 +109,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       </div>
 
       {/* KPI Cards Grid - Noticeable Elevated Boxes */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* KPI 1: Monthly Gross Payroll */}
         <div className="bg-slate-900/90 border border-slate-700/70 hover:border-emerald-500/50 rounded-2xl p-5 shadow-lg shadow-black/20 hover:shadow-xl transition-all group relative overflow-hidden">
           <div className="flex items-center justify-between">
@@ -169,38 +167,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
 
-        {/* KPI 4: Plan Utilization / Free Tier */}
-        <div className="bg-slate-900/90 border border-slate-700/70 hover:border-purple-500/50 rounded-2xl p-5 shadow-lg shadow-black/20 hover:shadow-xl transition-all group relative overflow-hidden">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-mono">Plan Headcount</span>
-            <div className="p-2 bg-purple-500/10 rounded-xl text-purple-400 border border-purple-500/20 group-hover:scale-105 transition-transform">
-              <Sparkles className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-4">
-            <div className="flex items-baseline justify-between">
-              <span className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight font-mono">
-                {activeEmployees.length} <span className="text-sm font-normal text-slate-400">/ {currentPlan.maxEmployees}</span>
-              </span>
-              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30 font-mono">
-                {currentPlan.id}
-              </span>
-            </div>
-            {/* Progress bar */}
-            <div className="w-full bg-slate-950 h-2 rounded-full mt-3 overflow-hidden border border-slate-800">
-              <div
-                className={`h-full rounded-full transition-all ${
-                  activeEmployees.length >= currentPlan.maxEmployees ? 'bg-amber-500' : 'bg-emerald-500'
-                }`}
-                style={{ width: `${Math.min(100, (activeEmployees.length / currentPlan.maxEmployees) * 100)}%` }}
-              />
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Quick Action Boxes */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <button
           onClick={() => onNavigateTab('payroll')}
           className="flex items-center justify-between p-4 bg-slate-900/90 border border-slate-700/80 hover:border-emerald-400 rounded-xl text-left group transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5"
@@ -240,24 +210,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </button>
 
-        <button
-          onClick={() => onNavigateTab('security')}
-          className="flex items-center justify-between p-4 bg-slate-900/90 border border-slate-700/80 hover:border-purple-400 rounded-xl text-left group transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5"
-        >
-          <div>
-            <span className="text-[10px] text-purple-400 font-bold uppercase tracking-wider block font-mono">SHA-256 Seal</span>
-            <span className="text-sm font-bold text-white group-hover:text-purple-300 transition-colors">Verify Hash Integrity</span>
-          </div>
-          <div className="p-1.5 rounded-lg bg-purple-500/10 text-purple-400 group-hover:bg-purple-500/20 transition-colors">
-            <ShieldCheck className="w-4 h-4" />
-          </div>
-        </button>
       </div>
 
       {/* Main Content Split: Recent Runs & Legal Compliance Audit */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column (2 cols): Recent Payroll Runs Box */}
-        <div className="lg:col-span-2 bg-slate-900/95 border border-slate-700/80 rounded-2xl p-6 shadow-xl shadow-black/30">
+        <div className="lg:col-span-3 bg-slate-900/95 border border-slate-700/80 rounded-2xl p-6 shadow-xl shadow-black/30">
           <div className="flex items-center justify-between mb-5">
             <div>
               <h2 className="text-lg font-bold text-white tracking-tight">Recent Payroll Runs</h2>
@@ -331,77 +289,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           )}
         </div>
 
-        {/* Right Column (1 col): Statutory Compliance Checklist Box */}
-        <div className="bg-slate-900/95 border border-slate-700/80 rounded-2xl p-6 shadow-xl shadow-black/30 space-y-4">
-          <div>
-            <h2 className="text-lg font-bold text-white flex items-center gap-2 tracking-tight">
-              <ShieldCheck className="w-5 h-5 text-emerald-400" />
-              <span>South African Law Compliance</span>
-            </h2>
-            <p className="text-xs text-slate-400 mt-0.5">Real-time statutory compliance status</p>
-          </div>
-
-          <div className="space-y-2.5">
-            <div className="p-3.5 bg-slate-950/80 rounded-xl border border-slate-800/90 hover:border-slate-700 flex items-start gap-3 transition-colors">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-              <div>
-                <span className="text-xs font-bold text-white block">SARS 2026/2027 Tax Tables</span>
-                <span className="text-[11px] text-slate-400 block leading-relaxed mt-0.5">
-                  Official 7-bracket progressive tax scale, Primary (R17,820), Secondary (R9,765), Tertiary (R3,249).
-                </span>
-              </div>
-            </div>
-
-            <div className="p-3.5 bg-slate-950/80 rounded-xl border border-slate-800/90 hover:border-slate-700 flex items-start gap-3 transition-colors">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-              <div>
-                <span className="text-xs font-bold text-white block">UICA 2002 Ceiling (R17,712)</span>
-                <span className="text-[11px] text-slate-400 block leading-relaxed mt-0.5">
-                  UIF contributions capped at R177.12 for employee and employer.
-                </span>
-              </div>
-            </div>
-
-            <div className="p-3.5 bg-slate-950/80 rounded-xl border border-slate-800/90 hover:border-slate-700 flex items-start gap-3 transition-colors">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-              <div>
-                <span className="text-xs font-bold text-white block">Tax Administration Act (s29)</span>
-                <span className="text-[11px] text-slate-400 block leading-relaxed mt-0.5">
-                  Mandatory 5-year cryptographic record retention with SHA-256 seal.
-                </span>
-              </div>
-            </div>
-
-            <div className="p-3.5 bg-slate-950/80 rounded-xl border border-slate-800/90 hover:border-slate-700 flex items-start gap-3 transition-colors">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-              <div>
-                <span className="text-xs font-bold text-white block">POPIA Protection &amp; RBAC</span>
-                <span className="text-[11px] text-slate-400 block leading-relaxed mt-0.5">
-                  Data masking for RSA IDs, bank accounts, and strict cross-tenant IDOR isolation.
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Executive Statutory Filing Overview Box */}
-          <div className="p-4 bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950/60 border border-indigo-900/50 rounded-xl shadow-inner">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                <span>SARS Filing Cycle Active</span>
-              </span>
-              <button
-                onClick={() => onNavigateTab('sars')}
-                className="text-[11px] font-bold text-emerald-400 hover:text-emerald-300 transition-colors"
-              >
-                Filing Portal &rarr;
-              </button>
-            </div>
-            <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">
-              Automated declarations ready for eFiling: EMP201 monthly return, EMP501 bi-annual reconciliation, and IRP5 certificates.
-            </p>
-          </div>
-        </div>
       </div>
     </div>
   );

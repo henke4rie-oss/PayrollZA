@@ -98,3 +98,15 @@ export async function validateSaIdApi(idNumber: string): Promise<SaIdValidation>
     error: r.error ?? undefined,
   };
 }
+
+/** Pings GET /health so the UI can show whether the Python API is up. */
+export async function checkApiHealth(): Promise<{ online: boolean; database?: string }> {
+  try {
+    const response = await fetch(`${API_URL}/health`);
+    if (!response.ok) return { online: false };
+    const data = await response.json();
+    return { online: true, database: data.database };
+  } catch {
+    return { online: false };
+  }
+}

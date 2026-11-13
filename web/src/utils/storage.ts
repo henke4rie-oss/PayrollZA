@@ -320,9 +320,10 @@ export class LocalTenantStorage {
         uifEmployee: calc.uifEmployee,
         uifEmployer: calc.uifEmployer,
         sdl: calc.sdlAmount,
-        eti: calc.etiAmount,
+        // ETI is not implemented in the Python API, so the demo run carries none either
+        eti: 0,
         netPay: calc.netPay,
-        totalEmployerCost: calc.totalEmployerCost,
+        totalEmployerCost: Math.round((calc.totalEmployerCost + calc.etiAmount) * 100) / 100,
         generatedAt: '2026-03-25T14:30:00.000Z',
       };
     });
