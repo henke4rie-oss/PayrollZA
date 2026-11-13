@@ -40,12 +40,18 @@ PYTHONPATH=. pytest -v api/tests
 
 ## Scope and Limitations
 * **ETI (Employment Tax Incentive) is not implemented.** The engine covers PAYE, UIF and SDL only.
-* **`web/` is an AI-assisted front-end prototype.** The billing, security and ownership screens are mock UI with no backend behind them. The Python API is the actual project.
+* **`web/` is a React client for the API.** Payroll runs and SA ID validation call the Python API. Employee and payroll-run data is stored in the browser (localStorage) for demo purposes, with no server-side persistence yet.
+* **SARS Reports are generated client-side** from payroll runs. The file formats are not validated against SARS submission specs.
 
-### Running the prototype (optional)
+### Running the full stack
 ```bash
+# terminal 1: API
+cd api
+docker compose up --build
+
+# terminal 2: front end
 cd web
 npm install
 npm run dev
 ```
-Opens on http://localhost:3000. Tests: `npm test`.
+Open http://localhost:3000. The header badge shows whether the API is reachable. Set `VITE_API_URL` to point at a different API address.
