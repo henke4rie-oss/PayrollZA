@@ -29,7 +29,8 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { Employee, Tenant, UserRole } from '../types';
-import { validateSouthAfricanId, calculateAgeFromDateOfBirth } from '../utils/taxEngine';
+import { calculateAgeFromDateOfBirth } from '../utils/taxEngine';
+import { validateSaIdApi } from '../utils/api';
 import { maskBankAccount, maskSouthAfricanId, hasPermission } from '../utils/security';
 import {
   parseCsvText,
@@ -107,16 +108,21 @@ export const EmployeesView: React.FC<EmployeesViewProps> = ({
 
   const departments = Array.from(new Set(employees.map((e) => e.department)));
 
-  // Handle RSA ID Change with real-time Luhn calculation
-  const handleIdChange = (value: string) => {
+  // Handle RSA ID change: once 13 characters are typed, the Python API checks it
+  const handleIdChange = async (value: string) => {
     setIdNumber(value);
     if (value.trim().length >= 13) {
       setIsValidatingId(true);
-      setTimeout(() => {
-        const check = validateSouthAfricanId(value);
+      try {
+        const check = await validateSaIdApi(value);
         setIdValidation(check);
-        setIsValidatingId(false);
-      }, 150);
+      } catch (err) {
+        setIdValidation({
+          isValid: false,
+          error: err instanceof Error ? err.message : 'ID validation failed.',
+        });
+      }
+      setIsValidatingId(false);
     } else {
       setIdValidation(null);
       setIsValidatingId(false);

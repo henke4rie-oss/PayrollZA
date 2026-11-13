@@ -27,7 +27,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { Employee, PayrollRun, Payslip, Tenant, UserRole } from '../types';
-import { calculatePayroll } from '../utils/taxEngine';
+import { calculatePayrollApi } from '../utils/api';
 import { generateSha256Checksum, hasPermission } from '../utils/security';
 import { exportPayrollToCsv, downloadFile } from '../utils/sarsReports';
 import { BankBatchExportModal } from './BankBatchExportModal';
@@ -78,9 +78,13 @@ export const PayrollRunView: React.FC<PayrollRunViewProps> = ({
 
     setIsCalculating(true);
 
-    setTimeout(() => {
-      const generatedPayslips: Payslip[] = activeEmployees.map((emp) => {
-        const calc = calculatePayroll(emp.grossMonthlySalary, emp.age, tenant.isSdlExempt);
+    try {
+      // All maths happens in the Python API: one request per employee, sent in parallel.
+      const calcs = await Promise.all(
+        activeEmployees.map((emp) => calculatePayrollApi(emp.grossMonthlySalary, emp.age, tenant.isSdlExempt)),
+      );
+      const generatedPayslips: Payslip[] = activeEmployees.map((emp, i) => {
+        const calc = calcs[i];
         return {
           id: `slip-${emp.id}-${period.replace('/', '')}-${Date.now()}`,
           tenantId: tenant.id,
@@ -134,7 +138,11 @@ export const PayrollRunView: React.FC<PayrollRunViewProps> = ({
       setIsCalculating(false);
       setNotification(`Calculated payroll for ${generatedPayslips.length} employees (Period: ${period}). Review below before sealing.`);
       setTimeout(() => setNotification(null), 5000);
-    }, 200);
+    } catch (err) {
+      // API down or rejected the request: show why instead of failing silently
+      setIsCalculating(false);
+      setNotification(err instanceof Error ? err.message : 'Payroll calculation failed.');
+    }
   };
 
   const handleFinalizeRun = async () => {
